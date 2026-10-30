@@ -1,0 +1,43 @@
+import {Output,Mp4OutputFormat,BufferTarget,CanvasSource,AudioBufferSource,Quality} from '../vendor/mediabunny.mjs';
+import {Fight} from './engine.js';
+import {Renderer,pixelText,arcadeText,heart} from './render.js';
+import {STAGES,CHARACTERS} from './data.js';
+import {createReplayDriver,seededRandom} from './replay-driver.js';
+const canvas=document.querySelector('#preview'),renderer=new Renderer(canvas),c=renderer.ctx,status=document.querySelector('#status'),button=document.querySelector('#record');
+await renderer.load();renderer.render(null,{stage:3,menu:true});
+const FPS=30,SAMPLE_RATE=48000;
+const frequencies={kiss:[740,1200],cheek:[880,1320],forehead:[660,990],neck:[330,880],hand:[380,570],hug:[260,520],cuddle:[330,660],lap:[294,587],bear:[196,392,587],surprise:[988,1480],heart:[180,1200],storm:[740,880,988,1175],ultimateCuddle:[262,330,392,523],upper:[220,1400],overload:[196,294,392,587,784,1175],finisher:[523,659,784,1046],hit:[180,90],block:[120,60],jump:[210,480],dodge:[120,400],round:[523,659,784],victory:[523,659,784,1046,784,1046],interact:[392,523,659]};
+function shade(x,y,w,h,color='#1d102be8'){c.fillStyle=color;c.fillRect(x,y,w,h);}
+function wrap(text,x,y,width=60,size=2,color='#ffe3b1'){let line='',lines=[];for(const word of text.toUpperCase().split(' ')){if((line+word).length>width){lines.push(line.trim());line='';}line+=word+' ';}lines.push(line.trim());lines.forEach((line,i)=>pixelText(c,line,x,y+i*(size*7+9),size,color));return lines.length;}
+button.onclick=async()=>{
+ button.disabled=true;let frame=0,stage=0,voices=[],musicStep=-1,failed=null;const chapters=[],events=[];const outCanvas=document.createElement('canvas');outCanvas.width=1920;outCanvas.height=1080;const outContext=outCanvas.getContext('2d');outContext.imageSmoothingEnabled=false;
+ const output=new Output({format:new Mp4OutputFormat({fastStart:'in-memory'}),target:new BufferTarget()});
+ const video=new CanvasSource(outCanvas,{codec:'avc',quality:new Quality({bitrate:3_000_000}),keyFrameInterval:2,hardwareAcceleration:'prefer-hardware'});
+ const audio=new AudioBufferSource({codec:'aac',quality:new Quality({bitrate:128_000})});
+ output.addVideoTrack(video,{frameRate:FPS});output.addAudioTrack(audio);output.setMetadataTags({title:'LOVE FIGHT — Full desktop playthrough',artist:'Mahera × Zihan',comment:'Autoplay of actual game simulation. All eight arenas; no health, energy or outcome overrides.'});
+ const report=async(message,extra={})=>{status.textContent=message;await fetch('/__recording/status',{method:'POST',body:JSON.stringify({status:message,frame,seconds:frame/FPS,stage:stage+1,...extra})});};
+ function note(f,start,duration=.14,volume=.06,type='square'){voices.push({f,start,duration,volume,type});}
+ function fx(kind){(frequencies[kind]||frequencies.kiss).forEach((f,i)=>note(f,frame/FPS+i*.085,kind==='victory'?.3:.14,kind==='hit'?.035:.065));}
+ function synth(){const t=frame/FPS,step=Math.floor(t/.19),scale=[261.63,329.63,392,523.25,440,392,329.63,293.66],tune=[0,2,4,2,3,2,1,2,0,2,5,2,6,2,7,1];if(step!==musicStep){musicStep=step;note(scale[tune[(step+stage*2)%16]],t,.16,.045,'triangle');if(step%4===0)note(scale[[0,4,6,7][Math.floor(step/8)%4]]/2,t,.35,.05,'triangle');if(step%2===0)note(80,t,.04,.018,'square');}const data=new Float32Array(SAMPLE_RATE/FPS);for(let i=0;i<data.length;i++){const sampleTime=t+i/SAMPLE_RATE;let v=0;for(const voice of voices){const age=sampleTime-voice.start;if(age<0||age>=voice.duration)continue;const envelope=Math.min(1,age/.008)*Math.exp(-age/voice.duration*4),phase=(age*voice.f)%1;v+=(voice.type==='triangle'?1-4*Math.abs(phase-.5):phase<.5?1:-1)*voice.volume*envelope;}data[i]=Math.max(-.9,Math.min(.9,v));}voices=voices.filter(v=>t-v.start<v.duration+.1);const b=new AudioBuffer({length:data.length,numberOfChannels:1,sampleRate:SAMPLE_RATE});b.copyToChannel(data,0);return b;}
+ async function capture(){outContext.drawImage(canvas,0,0,1920,1080);await video.add(frame/FPS,1/FPS);await audio.add(synth());frame++;if(frame%120===0)await report(`Recording arena ${stage+1}/8 · ${Math.floor(frame/FPS)} seconds captured`);}
+ async function segment(seconds,draw){for(let i=0;i<seconds*FPS;i++){renderer.time=frame/FPS;draw(i/FPS);await capture();}}
+ try{
+  await report('Starting 1080p MP4 encoder…');await output.start();
+  await segment(5,()=>{renderer.render(null,{stage:3,menu:true});shade(0,0,535,540,'#1b0f2ac9');arcadeText(c,'LOVE',265,105,12);arcadeText(c,'FIGHT',265,207,12);pixelText(c,'THE PDA ARCADE',265,325,3,'#ffe6ba','center');pixelText(c,'MAHERA X ZIHAN',265,385,2,'#a0e7d0','center');pixelText(c,'FULL GAME PLAYTHROUGH',265,439,2,'#f5b3cd','center');pixelText(c,'AUTOPLAY / DESKTOP EDITION',265,478,1,'#c3a0bc','center');});
+  await segment(4,()=>{renderer.render(null,{stage:0,menu:true});shade(30,30,490,480);pixelText(c,'CHOOSE YOUR CHAOS',58,58,3);['PLAY / QUICK MATCH','STORY MODE','VERSUS MODE','TRAINING MODE','ARCADE MODE','CHARACTER SELECT','RELATIONSHIP STATS','SETTINGS'].forEach((s,i)=>pixelText(c,(i===1?'> ':'  ')+s,60,118+i*42,2,i===1?'#ff88af':'#d9b5cc'));});
+  await segment(4,()=>{renderer.background(0,frame/FPS);shade(0,0,960,540,'#160d25dc');pixelText(c,'PICK YOUR HEARTBREAKER',480,35,4,'#ffe1a9','center');for(let i=0;i<2;i++){renderer.fighter({character:i,index:i,x:270+i*420,y:365,face:i?-1:1,state:'victory',stateTime:frame/FPS},0,1.2);pixelText(c,CHARACTERS[i].name,270+i*420,398,4,i?'#a2dbef':'#ffc0d2','center');pixelText(c,CHARACTERS[i].title,270+i*420,445,1,'#ffe4b8','center');}pixelText(c,'STORY MODE / MAHERA',480,490,2,'#8de5c5','center');});
+  for(stage=0;stage<8;stage++){
+   const start=frame/FPS,s=STAGES[stage];
+   await segment(5,()=>{renderer.render(null,{stage,menu:false});shade(28,286,904,228);pixelText(c,`CHAPTER ${stage+1} / 8`,52,306,2,'#97dfc6');pixelText(c,s.name,52,340,3,'#ffe1b0');let yy=382;for(const line of s.dialog){yy+=wrap(line,52,yy,69,2)*23;}pixelText(c,s.prop.name+' / TWO-BUTTON PDA',52,488,1,'#ffb4cb');});
+   let winner=null;const fight=new Fight({stage,mode:'story',difficulty:'easy',random:seededRandom(1996+stage),onEvent:e=>{events.push({...e,time:frame/FPS,stage});if(e.type==='attack')fx(e.id);else if(e.type==='hit')fx(e.id==='overload'?e.phase:'hit');else if(frequencies[e.type])fx(e.type);if(e.type==='end')winner=e.winner;}}),driver=createReplayDriver();
+   let elapsed=0;while(!fight.ended&&elapsed<400){for(let step=0;step<2;step++)fight.step(1/60,[driver(fight),{}]);renderer.time=frame/FPS;renderer.render(fight);pixelText(c,'AUTOPLAY',480,507,1,'#e1b3c7','center');await capture();elapsed+=1/FPS;}
+   if(!fight.ended||winner!==0)throw Error(`Arena ${stage+1} did not complete with a player victory; capture stopped for review.`);
+   fx('victory');await segment(stage===7?8:4,()=>{renderer.render(null,{stage,victory:true,victoryCharacter:0});shade(0,0,960,140,'#180b2ba8');arcadeText(c,'YOU WIN',480,35,7);heart(c,270,60,5);heart(c,692,60,5);pixelText(c,'YOU HAVE BEEN DEFEATED BY LOVE.',480,110,2,'#f2bbce','center');shade(652,178,280,216);pixelText(c,'> CONTINUE',674,202,3);pixelText(c,'TOGETHER?',674,234,3);arcadeText(c,'YES',793,286,4);heart(c,728,300,3);pixelText(c,'NO',793,339,3,'#b69bb8','center');shade(230,458,500,62);pixelText(c,`SCORE ${fight.score} / BEST COMBO ${Math.max(...fight.fighters.map(p=>p.maxCombo))}`,480,475,2,'#ffe1a5','center');pixelText(c,stage===7?'FOREVER? YES. EVERY LIFETIME.':s.location+' COMPLETE',480,503,1,'#f3a9c9','center');});
+   chapters.push({stage:stage+1,name:s.name,start,end:frame/FPS,duration:frame/FPS-start,rounds:fight.wins,score:fight.score,interactions:fight.events.filter(e=>e.type==='interact').length,specials:[...fight.specialsUsed]});
+  }
+  await report('Finalizing MP4 and saving the complete playthrough…');video.close();audio.close();await output.finalize();
+  const response=await fetch('/__recording/video',{method:'POST',headers:{'Content-Type':'video/mp4'},body:output.target.buffer});if(!response.ok)throw Error('Video could not be saved');
+  await fetch('/__recording/metadata',{method:'POST',body:JSON.stringify({duration:frame/FPS,width:1920,height:1080,fps:FPS,frames:frame,bytes:output.target.buffer.byteLength,chapters,events},null,2)});
+  await report('COMPLETE — LOVE-FIGHT-full-playthrough.mp4',{complete:true,bytes:output.target.buffer.byteLength});button.textContent='RECORDING COMPLETE';const link=document.createElement('a');link.href='artifacts/LOVE-FIGHT-full-playthrough.mp4';link.textContent='Download full MP4';link.style.color='#a0e6cf';link.download='LOVE-FIGHT-full-playthrough.mp4';document.body.append(link);
+ }catch(error){failed=error;console.error(error);await report('ERROR: '+error.message,{error:true});button.disabled=false;}
+};
