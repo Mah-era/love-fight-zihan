@@ -116,6 +116,6 @@ For a browser smoke test, run `npm run dev`, open the local URL, press Start, en
 
 `index.html` contains the cabinet shell and accessibility status output. `style.css` contains the desktop visual system and intentionally hides touch controls until mobile is requested. `src/main.js` owns screens, input mapping, menus, pause flow, progression and online integration. `src/engine.js` is the simulation. `src/render.js` draws the pixel scene. `src/data.js` stores fighters, moves, stages and dialogue. `src/online.js` manages room lifecycle. `src/net-state.js` validates packets and serializes snapshots. `src/audio.js` creates synthesized music and effects. `src/storage.js` handles safe browser persistence. `src/progression.js` records wins and achievements. `src/replay-driver.js` supplies the recorder's ordinary inputs. `tests/` contains Node's built-in test suite. `assets/` contains local art and font files. `vendor/` contains the bundled PeerJS client and license.
 
-### Known deployment requirement
+### Live deployment
 
-The checked-out project runs locally and contains the complete online client. A true cross-device online session requires both players to load the same reachable URL. A Git push also requires a configured Git remote; this checkout currently has no `.git` directory or remote, so the code can be committed locally but cannot be pushed to an unknown destination.
+GitHub Actions publishes the `dist/` directory to GitHub Pages on each push to `main`. The live game is at https://mah-era.github.io/love-fight-zihan/. The MP4 recording stays local and is excluded from this repository and website. Online rooms require both players to open that same live URL and keep their game tabs open.
