@@ -21,3 +21,7 @@ Four columns by two rows of detailed 16-bit fighting backgrounds, no fighters or
 Four columns by two rows of transparent, separately rendered foreground furniture: teal restaurant booth, pink rattan loveseat, red cinema chairs, rooftop flower bench, lavender/red bed, mall bench, neon arcade cabinet, floral golden dais. Nearly front-facing side-view composition, flat seating/platform surfaces, intricate pixel textures, dark outlines, purple shadows and amber highlights. The engine's collision rectangles and interactions are aligned with the visible furniture surfaces.
 
 Sprite frames are cropped from their atlases at runtime. Props, ambient effects, lights, petals, screen effects, particles, fighters, paired poses and HUD are distinct rendering layers; background paintings never substitute for gameplay.
+# Wedding ending assets
+
+Built-in image generation produced `dist/assets/wedding-poses.png` and `dist/assets/wedding-stage.png` from the user-approved wedding board. Pose prompt: transparent four-column, two-row atlas with ring exchange, forehead kiss, lip kiss and joined-hands celebration, two animation frames each; preserve Mahera's red/gold saree and Zihan's stocky body, black glasses, black panjabi and cream trousers. Stage prompt: expand the approved empty Bangladeshi wedding stage into a 16:9 pixel-art background with cream/gold loveseat, ruby drapes, roses, marigolds, fairy lights and unobstructed foreground. No generated text is used for the ending message; it is rendered in code for exact spelling.
+

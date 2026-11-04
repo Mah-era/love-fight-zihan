@@ -1,5 +1,11 @@
 # LOVE FIGHT: THE PDA ARCADE
 
+## Wedding ending
+
+Winning the eighth Story arena plays a 20-second animated Bangladeshi wedding: arrival (0–3s), ring exchange (3–6s), forehead kiss (6–9s), lip kiss (9–12s), celebration (12–16s), and final message (16–20s). Mahera wears a red and gold saree and Zihan a black panjabi. The message reads “biye kore ar ki hobe, na korleo hobe”. The scene returns to the existing victory screen and does not award rewards twice. Escape or Skip exits early; switching tabs pauses the sequence. Reduced-motion preferences suppress camera movement and sprite keyframe cycling.
+
+Watch it directly at [Wedding preview](https://mah-era.github.io/love-fight-zihan/wedding-preview.html). The ending uses Canvas animation and PNG sprites, with no video upload. `dist/src/wedding.js` contains the timeline and rendering, and `tests/wedding.test.mjs` verifies eligibility and the sequence. Run `node --test tests/wedding.test.mjs`.
+
 A local Canvas fighting game starring Mahera and Zihan. This is the desktop keyboard edition. Mobile work is deferred until explicitly requested.
 
 The live game is at https://mah-era.github.io/love-fight-zihan/
