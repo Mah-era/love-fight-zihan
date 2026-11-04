@@ -2,6 +2,8 @@
 
 A local Canvas fighting game starring Mahera and Zihan. This is the desktop keyboard edition. Mobile work is deferred until explicitly requested.
 
+The live game is at https://mah-era.github.io/love-fight-zihan/
+
 ## Run
 
 Requires Node.js 18 or newer. No package installation is required.
@@ -118,4 +120,4 @@ For a browser smoke test, run `npm run dev`, open the local URL, press Start, en
 
 ### Live deployment
 
-GitHub Actions publishes the `dist/` directory to GitHub Pages on each push to `main`. The live game is at https://mah-era.github.io/love-fight-zihan/. The MP4 recording stays local and is excluded from this repository and website. Online rooms require both players to open that same live URL and keep their game tabs open.
+GitHub Actions publishes the `dist/` directory to GitHub Pages on each push to `main`. The MP4 recording stays local and is excluded from this repository and website. Online rooms require both players to open that same live URL and keep their game tabs open.
