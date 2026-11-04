@@ -1,129 +1,167 @@
-# LOVE FIGHT: THE PDA ARCADE
+# Love Fight: The PDA Arcade
 
-## Wedding ending
+A personal anniversary game about affection, companionship, and playful competition. Built around Mahera and Zihan, Love Fight brings the presentation of a classic arcade fighter to eight places in their shared story, ending with a Bangladeshi wedding celebration.
 
-Winning the eighth Story arena plays a 20-second animated Bangladeshi wedding: arrival (0–3s), ring exchange (3–6s), forehead kiss (6–9s), lip kiss (9–12s), celebration (12–16s), and final message (16–20s). Mahera wears a red and gold saree and Zihan a black panjabi. The message reads “biye kore ar ki hobe, na korleo hobe”. The scene returns to the existing victory screen and does not award rewards twice. Escape or Skip exits early; switching tabs pauses the sequence. Reduced-motion preferences suppress camera movement and sprite keyframe cycling.
+[Play the game](https://mah-era.github.io/love-fight-zihan/) · [Preview the wedding ending](https://mah-era.github.io/love-fight-zihan/wedding-preview.html)
 
-Watch it directly at [Wedding preview](https://mah-era.github.io/love-fight-zihan/wedding-preview.html). The ending uses Canvas animation and PNG sprites, with no video upload. `dist/src/wedding.js` contains the timeline and rendering, and `tests/wedding.test.mjs` verifies eligibility and the sequence. Run `node --test tests/wedding.test.mjs`.
+## Overview
 
-A local Canvas fighting game starring Mahera and Zihan. This is the desktop keyboard edition. Mobile work is deferred until explicitly requested.
+Love Fight is a desktop browser game with two playable characters, a two-button attack system, interactive environments, solo progression, and local or online versus play. Kisses, embraces, and other affectionate gestures form the move set, while spacing, timing, defense, and energy management determine the outcome of each match.
 
-The live game is at https://mah-era.github.io/love-fight-zihan/
+Its visual direction combines detailed pixel art, warm evening palettes, arcade typography, animated hearts, and synthesized music. The anniversary dedication is part of the opening screen; the wedding ending completes the Story campaign.
 
-## Run
+Both characters are adults. Mahera's play style emphasizes speed and quick combinations. Zihan favors stronger attacks and greater resilience. Arena variants introduce changes in clothing palettes, CPU tactics, and available moves.
 
-Requires Node.js 18 or newer. No package installation is required.
+## Getting started
 
-```sh
-npm run dev
-```
+Open the [live game](https://mah-era.github.io/love-fight-zihan/) in a current desktop browser and select **Press Start**. Choose **Quick Match** for an immediate match, **Story Mode** for the eight-chapter campaign, or **Versus Mode** to play with a second person.
 
-Open http://localhost:4173. The included server binds to localhost. The local modes make no network requests beyond loading local assets.
+Keyboard controls are the supported input method. Audio begins after a click or key press. Mobile controls are not enabled in this edition.
 
-The menu also includes live online two-player play. Choose `VERSUS` → `ONLINE TWO PLAYER`. The host creates an eight-character room code, the second player joins with that code, and the host starts after the guest presses `I'M READY`. The host selects the arena. Both players use their own P1 keys: WASD, F/G for the two attacks, F+G for a special, E for furniture, and Escape to pause both players. The host runs the authoritative fight simulation; the guest sends input and receives 30 Hz snapshots, keeping damage, furniture, rounds, victory and rematches synchronized. Create a new room after a disconnect.
+### Game modes
 
-Online play uses PeerJS/WebRTC data channels. A signaling service helps browsers find each other, then game data flows peer to peer. Restrictive networks may require TURN relay configuration; deployments can provide it through `window.LOVE_FIGHT_RTC`. Mobile controls remain intentionally deferred until requested.
+| Mode | Experience |
+| --- | --- |
+| Quick Match | Choose an arena and face the CPU. |
+| Story | Progress through eight chapters with dialogue, saved arena unlocks, and the wedding ending. |
+| Local Versus | Two players share one keyboard; the first to win two rounds wins the match. |
+| Online Versus | Two players connect through a room code from separate computers. |
+| Training | Practice without a time limit, refill resources, and select an idle, blocking, or active opponent. |
+| Arcade | Play through the arena sequence against changing CPU styles. |
 
-The complete desktop recording is [LOVE-FIGHT-full-playthrough.mp4](artifacts/LOVE-FIGHT-full-playthrough.mp4): 1920×1080, 30 fps, 6:35, synthesized arcade audio, all eight arenas.
+### Default controls
 
-## Anniversary landing message
-
-The landing screen displays the requested dedication exactly as written:
-
-> Happy 5th Anniversary Zihan!  
-> PRAY you become a better person and treat me with love and respect; HOW you intend to!
-
-## Controls
-
-| Action | Player 1 | Player 2 |
+| Action | Player 1 | Player 2 — local versus |
 | --- | --- | --- |
-| Move | A / D | Left / Right |
-| Jump | W | Up |
-| Crouch | S | Down |
-| Kiss / light attack | F | 1 |
-| Hug / grapple | G | 2 |
-| Stage special | F + G together | 1 + 2 together |
+| Move left / right | A / D | Left / Right arrows |
+| Jump | W | Up arrow |
+| Crouch | S | Down arrow |
+| Attack 1 | F | 1 |
+| Attack 2 | G | 2 |
+| Special | F + G | 1 + 2 |
 | Dodge | Space | 0 |
-| Use furniture | E | Enter |
+| Use nearby furniture | E | Enter |
 | Pause | Escape | Escape |
 
-Hold away from your partner to block. Double-tap a direction to run. Two attack buttons together spend 40 energy on the stage special; at 100 energy they trigger PDA Overload. Controls can be remapped in Settings.
+Controls can be reassigned in **Settings**. In online play, each participant uses the Player 1 bindings on their own computer, regardless of which fighter they control.
 
-## Modes and arenas
+Hold a direction away from the opponent to block. Double-tap a direction to run. Press both attack buttons together to use a stage special with at least 40 energy; at 100 energy, the same input activates **PDA Overload**.
 
-- **Quick match:** any arena against the CPU.
-- **Story:** eight chapters, stage-specific dialogue, increasing challenge, saved checkpoints.
-- **Versus:** two local players or live online players, best of three, pause and rematches.
-- **Training:** infinite time, refill, idle/blocking/fighting dummy, damage and combo display.
-- **Arcade:** eight increasingly difficult partner variants and a final encounter.
+## Combat and environments
 
-The restaurant, café, cinema, rooftop, bedroom, mall, arcade and Forever arena each have separate collision-enabled furniture. Jump onto it, or use it when nearby. Contextual affection moves require your partner to be nearby. The bed is its own sprite, platform and interaction anchor; it is not part of the painted room. Furniture use charges energy and triggers stage effects. Ambience is rendered in separate animated layers.
+Each arena assigns two basic moves and a stage special to the same attack buttons. The full move set includes kisses, hand holding, hugs, cuddles, and lap sitting, alongside heart projectiles and multi-hit specials.
 
-The two basic moves change by stage. All ten basic moves and six specials are defined in `src/data.js`. Movement, range, attack timing, recovery, hitstun, blocking, throws, dodges, counters, projectiles, energy, combos and round outcomes run in `src/engine.js` independently of drawing.
+Attacks have defined reach, startup, active timing, and recovery. Defense includes blocking, dodging, and counter opportunities; grabs can bypass a block. Successful attacks build combinations and contribute to energy and scoring. Most modes use timed rounds and require two round wins to complete a match.
 
-## Project structure
+Furniture is part of the playable space. Players can land on platforms, move off their edges, or use nearby objects to gain energy and initiate contextual interactions. Paired actions require the other character to be close enough. The bedroom bed has its own collision surface and supports both characters during seated interactions.
 
-- `src/engine.js`: simulation and CPU behavior, independent of DOM/Canvas.
-- `src/data.js`: characters, attacks, stages, furniture, dialogue and achievements.
-- `src/render.js`: Canvas sprite animation, paired affection states, scenery, HUD and particles.
-- `src/main.js`: menus, keyboard input and mode flow.
-- `src/online.js` / `src/net-state.js`: room flow, host-authoritative WebRTC session and validated snapshots.
-- `src/progression.js`: match rewards, checkpoints, endings and achievements.
-- `src/audio.js`: original procedural chiptune music and effects.
-- `src/storage.js`: versioned localStorage persistence with safe fallback.
-- `assets/`: locally stored original generated art and licensed font.
-- `tests/`: deterministic Node tests for mechanics and persistence.
+### The eight arenas
+
+| Chapter | Location | Interactive feature | Basic moves | Stage special |
+| --- | --- | --- | --- | --- |
+| First Date | Restaurant | Window booth | Kiss attack · Hand hold | Heart Blast |
+| Coffee & Chaos | Café | Panda-corner bench | Cheek kiss · Hug grab | Kiss Storm |
+| Movie Night | Cinema | Back-row seats | Forehead kiss · Cuddle attack | Heart Blast |
+| Golden Hour | Rooftop | Flower bench | Surprise kiss · Bear hug | Love Upper Cut |
+| Do Not Disturb | Bedroom | Bed | Neck kiss · Lap sit | Ultimate Cuddle |
+| Public Display | Shopping mall | Atrium bench | Kiss attack · Bear hug | Kiss Storm |
+| Player Two | Arcade | Co-op cabinet | Cheek kiss · Hug grab | Love Upper Cut |
+| Forever, Continue? | Forever arena | Flower-arch platform | Forehead kiss · Cuddle attack | Forehead Kiss Finisher |
+
+**PDA Overload** is available in every arena at full energy. Its six phases combine a kiss, neck kiss, hug, lap sit, another kiss, and a forehead kiss. Connected attacks and combinations trigger the arcade callouts throughout the game.
+
+## Playing together online
+
+1. Both players open the live game and select **Versus Mode → Online Two Player**.
+2. The host selects **Create Room** and shares the eight-character code.
+3. The second player enters the code and selects **Join Room**.
+4. The host chooses a fighter and arena. The guest receives the other fighter and selects **I'm Ready**.
+5. The host selects **Start Together**.
+
+Keep both game tabs open. Either player can pause the match. A rematch starts after both players choose **Yes**; if a player disconnects, create a new room to reconnect.
+
+Online mode uses the bundled PeerJS client and WebRTC data channels. A signaling service establishes the connection. The host runs the combat simulation and sends state updates to the guest; the guest sends input rather than calculating a separate match outcome. Sequence and match identifiers prevent stale input from being applied to a later match.
+
+Connection quality depends on both players' networks. Some restrictive networks require a TURN relay. Deployments can supply PeerJS connection options through `window.LOVE_FIGHT_RTC` before a room is opened. The repository does not include a managed TURN service or persistent room recovery.
+
+## Story conclusion
+
+Winning the eighth Story arena plays a 20-second wedding ending. Mahera wears a red and gold saree, and Zihan wears a black panjabi, against a decorated Bangladeshi wedding stage.
+
+The sequence moves through a ring exchange, a forehead kiss, a lip kiss, and a celebration before displaying:
+
+> biye kore ar ki hobe, na korleo hobe
+
+The ending is rendered inside the game using Canvas, character frames, animated lighting, hearts, and confetti. It returns to the victory screen when complete. **Skip Ending** or **Escape** exits early, and switching away from the tab pauses its timeline. Reduced-motion preferences suppress camera movement and character-frame cycling.
+
+The [standalone preview](https://mah-era.github.io/love-fight-zihan/wedding-preview.html) allows the ending to be viewed without completing the campaign.
+
+## Progress and settings
+
+The game saves settings, high scores, Story unlocks, achievements, and relationship statistics in the current browser using `localStorage`. Training does not add progression rewards. Saves are specific to the browser and site address; they do not automatically transfer between computers or between a local copy and the live site.
+
+Settings include keyboard bindings, music and effects volume, CPU difficulty, CRT scanlines, and screen shake. If browser storage is unavailable, the game falls back to session-only progress.
+
+## Running this repository locally
+
+The public repository contains a static website in `dist/`. It does not require a package installation or application build step. Serve that directory over HTTP rather than opening the HTML file directly.
+
+With Python 3 installed:
 
 ```sh
-npm test
+git clone https://github.com/Mah-era/love-fight-zihan.git
+cd love-fight-zihan
+python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
 
-Settings, high scores, story unlocks and achievements save on the current browser/device. Training does not alter progression. Audio starts after a click/key gesture and has separate music and effects volume controls. All art is local; no image generation or cloud service is needed to play.
+Open [http://127.0.0.1:4173](http://127.0.0.1:4173). The ending preview is available at `/wedding-preview.html`.
 
-## Asset provenance
+The local address is reachable only from the same computer. Use the hosted game URL when inviting someone on another device. Local solo and same-keyboard modes use bundled assets; online versus additionally requires internet access to establish a connection.
 
-Original character and environment assets were created with the built-in imagegen tool, using the supplied references. The selected fuller Zihan design with black rectangular glasses and a light-blue polo is the canonical character reference. Prompts and revisions are recorded in `ASSETS.md`. Press Start 2P is bundled under the SIL Open Font License; see `assets/FONT-LICENSE.txt`.
+## Code organization
 
-## Full feature reference
+| Path | Responsibility |
+| --- | --- |
+| `dist/index.html` | Game shell, canvas, controls, and status elements |
+| `dist/style.css` | Cabinet layout, menus, dedication, and ending presentation |
+| `dist/src/main.js` | Screen flow, input handling, progression, and mode integration |
+| `dist/src/data.js` | Characters, moves, stages, dialogue, and achievements |
+| `dist/src/engine.js` | Movement, collision, combat, rounds, and CPU behavior |
+| `dist/src/render.js` | Sprites, paired poses, scenery, HUD, and effects |
+| `dist/src/online.js` | Room lifecycle, connection status, pause, and rematch flow |
+| `dist/src/net-state.js` | Input buffering and match-state serialization |
+| `dist/src/progression.js` | Match rewards, campaign progress, and achievements |
+| `dist/src/storage.js` | Browser save data and fallback defaults |
+| `dist/src/audio.js` | Synthesized music and sound effects |
+| `dist/src/wedding.js` | Wedding eligibility, timeline, animation, and exit handling |
+| `dist/wedding-preview.html` | Standalone wedding preview |
+| `dist/assets/` | Character, environment, furniture, wedding, and font assets |
+| `dist/vendor/` | Bundled third-party libraries and license notices |
+| `tests/` | Tests included in this public repository |
+| `.github/workflows/pages.yml` | GitHub Pages deployment workflow |
 
-### Characters and presentation
+The deployed JavaScript modules are maintained directly in `dist/src/`. There is no framework compilation step. The combat simulation is separate from rendering, while the main module connects it to menus, input, audio, and progression.
 
-Mahera is the fast kiss-combo fighter. Zihan is the fuller, stocky cuddler with black rectangular glasses, a light-blue polo and beige trousers. Both are adults. Mahera's earrings are removed from the supplied character art. The paired interaction atlas uses the same approved character proportions as the standalone fighter sheet.
+### Validation
 
-The landing page keeps the arcade cabinet presentation and includes the anniversary dedication for Zihan. The character select screen shows partner descriptions and ratings. Stage variants recolor clothing and scenery while preserving the canonical character identity.
+With a current Node.js installation, run the included tests:
 
-### Combat model
+```sh
+node --test tests/*.test.mjs
+```
 
-The game keeps exactly two attack buttons per player. The buttons are context-sensitive by stage: each arena selects two basic moves and one stage special. Holding both attack buttons spends 40 energy on that stage special; reaching 100 energy enables PDA Overload. Overload contains six affection phases: kiss, neck kiss, cuddle grab, lap sit, kiss and forehead kiss.
+The tests currently included here verify the wedding trigger and timeline: only a player victory in the final Story arena starts the ending, and both kiss scenes appear before the final card. The broader development project has additional combat, networking, progression, and storage tests; those suites are not part of this published checkout.
 
-The engine also implements movement, jumping, gravity, one-way furniture platforms, crouching, running, blocking, dodge invulnerability, counter windows, grabs, projectiles, hitstun, recovery, combo decay, critical hits, energy gain, best-of-three rounds, timeout decisions, training mode and CPU difficulty. The engine is independent of Canvas rendering and is covered by deterministic tests.
+For browser verification, check that the title screen loads, a match starts, movement and furniture interaction work, and the wedding preview reaches its final card and returns cleanly. Changes to online behavior should also be tested with two browser clients, including pause, disconnect, and rematch handling.
 
-### Interactive arenas
+### Deployment and recordings
 
-There are eight arenas: The Restaurant, The Café, The Cinema, The Rooftop, The Bedroom, The Shopping Mall, The Arcade and The Forever Arena. Each has its own collision-enabled prop and move prompt. Props are rendered as separate foreground elements rather than being a stale background image. Players can jump onto platforms or press Use nearby. When both fighters are close, furniture interaction pulls them into a contextual PDA action.
+Pushes to `main` trigger the GitHub Actions workflow, which publishes `dist/` to GitHub Pages. Check the workflow result before treating a change as live.
 
-The bedroom's bed has its own platform rectangle, collision rules, sprite, edge clamping and seated/lap alignment. Bed actions include cuddle, neck kiss, lap sit and PDA Overload. The same interaction pattern applies to booths, benches, cinema seats, the arcade cabinet and the Forever platform.
+The MP4 playthrough is retained locally and is excluded from this repository and website. The public wedding ending is an in-game animation and does not require a video download. Supporting recording modules remain in the source, but the original recording page and local recording server are not included in this checkout.
 
-### Online architecture
+## Art, audio, and third-party notices
 
-Online mode is a two-player room, not a shared CPU match. The host owns the simulation, random outcomes, hit detection, furniture state, round state and victory result. Player 2 sends validated input packets. The host sends snapshots at up to 30 Hz, including fighter state, projectiles, particles, callouts and round events. Sequence numbers reject replayed input. Stale packets cannot affect a different match. The session pauses on a stalled connection, reports latency and stops safely after a disconnect. Both players must approve a rematch before a new match starts.
+Character and environment artwork was generated and refined from supplied references. The wedding artwork follows the approved red-saree and black-panjabi designs. [ASSETS.md](ASSETS.md) records the asset provenance and creative specifications. Music and sound effects are synthesized through the Web Audio API.
 
-PeerJS is bundled locally under `vendor/peerjs.min.js` with its license. PeerJS provides signaling and WebRTC data-channel setup; after connection, gameplay data travels directly between browsers where the network permits. A deployed version can define `window.LOVE_FIGHT_RTC` with short-lived ICE/TURN configuration. Do not commit permanent TURN credentials.
-
-### Recording pipeline
-
-`recording.html` and `src/recording.js` render an offline, deterministic desktop playthrough using the real renderer and engine. The recorder drives all eight stages, captures the menu, character select, stage intros, complete fights, victory prompts and audio, then writes an MP4 through Mediabunny. `scripts/record-server.mjs` receives the finished file and metadata in `artifacts/`. The delivered recording is not a slideshow and does not override health, energy or match outcomes.
-
-### Verification
-
-Run `npm test` after changes. The suite currently covers 29 tests across movement, attacks, specials, blocking, dodging, counters, combos, ultimate phases, all furniture, bed edge support, jumping, rounds, timeouts, training, CPU behavior, online input buffering, authoritative snapshots, lobby readiness, pause/disconnect behavior, rematches, version mismatch, progression and storage fallback.
-
-For a browser smoke test, run `npm run dev`, open the local URL, press Start, enter Versus, and verify both Local Two Player and Online Two Player screens. For online testing on two machines, use a hosted HTTPS URL or a LAN-accessible deployment; do not give another machine a `localhost` URL because it resolves to that other machine.
-
-### Project files
-
-`index.html` contains the cabinet shell and accessibility status output. `style.css` contains the desktop visual system and intentionally hides touch controls until mobile is requested. `src/main.js` owns screens, input mapping, menus, pause flow, progression and online integration. `src/engine.js` is the simulation. `src/render.js` draws the pixel scene. `src/data.js` stores fighters, moves, stages and dialogue. `src/online.js` manages room lifecycle. `src/net-state.js` validates packets and serializes snapshots. `src/audio.js` creates synthesized music and effects. `src/storage.js` handles safe browser persistence. `src/progression.js` records wins and achievements. `src/replay-driver.js` supplies the recorder's ordinary inputs. `tests/` contains Node's built-in test suite. `assets/` contains local art and font files. `vendor/` contains the bundled PeerJS client and license.
-
-### Live deployment
-
-GitHub Actions publishes the `dist/` directory to GitHub Pages on each push to `main`. The MP4 recording stays local and is excluded from this repository and website. Online rooms require both players to open that same live URL and keep their game tabs open.
+Press Start 2P is distributed under the [SIL Open Font License](dist/assets/FONT-LICENSE.txt). Bundled libraries retain their respective notices: [PeerJS](dist/vendor/PEERJS-LICENSE) and [Mediabunny](dist/vendor/MEDIABUNNY-LICENSE.txt). These third-party licenses apply to their respective components; they do not establish a blanket license for the game's personal artwork or other project content.
