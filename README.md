@@ -27,7 +27,6 @@ Keyboard controls are the supported input method. Audio begins after a click or 
 | Local Versus | Two players share one keyboard; the first to win two rounds wins the match. |
 | Online Versus | Two players connect through a room code from separate computers. |
 | Training | Practice without a time limit, refill resources, and select an idle, blocking, or active opponent. |
-| Arcade | Play through the arena sequence against changing CPU styles. |
 
 ### Default controls
 

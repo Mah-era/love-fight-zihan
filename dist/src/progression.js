@@ -11,7 +11,6 @@ export function recordMatch(profile, fight, winner, mode, stage, campaignScore=0
  profile.highScore=Math.max(profile.highScore,campaignScore);
  if(won){profile.wins++;if(!profile.stages.includes(stage))profile.stages.push(stage);
   if(mode==='story'){profile.unlocked=Math.max(profile.unlocked,Math.min(7,stage+1));if(stage===7)profile.storyComplete=true;}
-  if(mode==='arcade'&&stage===7)profile.arcadeComplete=true;
  }
  const earned=ACHIEVEMENTS.filter(([id,,,check])=>!profile.badges.includes(id)&&check(profile));
  for(const[id]of earned)profile.badges.push(id);
