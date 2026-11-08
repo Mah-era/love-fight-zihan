@@ -72,32 +72,46 @@ export function drawIntro(renderer,t) {
 }
 
 export async function playIntro(renderer, overlay, audio) {
-  const key='love-fight-cafe-intro-v4';
-  try { if(sessionStorage.getItem(key)) return; } catch {}
-  try { renderer.introFilm=await loadFilm(); } catch { return; }
-  await new Promise(resolve=>{
-    const skip=document.createElement('button');
-    skip.className='wedding-skip'; skip.textContent='SKIP INTRO';
-    overlay.replaceChildren(skip); skip.focus();
-    let frame, previous, elapsed=0, lastCue=-1;
-    function finish(){
-      cancelAnimationFrame(frame); document.removeEventListener('keydown',keyDown,true);
-      document.removeEventListener('pointerdown',unlock,true); skip.remove();
-      try { sessionStorage.setItem(key,'1'); } catch {}
+  await new Promise(resolve => {
+    const video = document.createElement('video');
+    video.src = new URL('../assets/sunset-cafe-intro.mp4', import.meta.url);
+    video.playsInline = true;
+    video.muted = true;
+    video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#151020';
+    video.setAttribute('aria-label','Sunset Café anniversary intro with illustrated dialogue');
+    const skip = document.createElement('button');
+    skip.className = 'wedding-skip';
+    skip.textContent = 'SKIP INTRO';
+    const sound = document.createElement('button');
+    sound.className = 'wedding-skip';
+    sound.style.cssText = 'left:16px;right:auto';
+    sound.textContent = 'ENABLE SOUND';
+    sound.onclick = () => {
+      video.muted = !video.muted;
+      sound.textContent = video.muted ? 'ENABLE SOUND' : 'MUTE';
+      video.play().catch(finish);
+    };
+    function finish() {
+      document.removeEventListener('keydown', onKey, true);
+      video.pause();
+      overlay.replaceChildren();
       resolve();
     }
-    function unlock(){audio.start();}
-    function keyDown(e){if(e.code==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish();}else if(!e.repeat)unlock();}
-    function tick(now){
-      if(previous!==undefined && !document.hidden) elapsed+=Math.max(0,Math.min((now-previous)/1000,.1));
-      previous=now;
-      if(elapsed>=25){finish();return;}
-      drawIntro(renderer,elapsed);
-      const cue=[0,4,8,12,16,21,23].filter(v=>v<=elapsed).length;
-      if(cue!==lastCue){audio.tone(cue>=5?784:1175,.22,'sine',.09);lastCue=cue;}
-      frame=requestAnimationFrame(tick);
+    function onKey(event) {
+      if (event.code === 'Escape') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        finish();
+      }
     }
-    skip.onclick=finish; document.addEventListener('keydown',keyDown,true);
-    document.addEventListener('pointerdown',unlock,true); tick(performance.now());
+    video.onended = video.onerror = skip.onclick = finish;
+    overlay.replaceChildren(video, sound, skip);
+    skip.focus({preventScroll:true});
+    document.addEventListener('keydown', onKey, true);
+    video.play().catch(error => {
+      if (!video.isConnected) return;
+      if (error.name !== 'NotAllowedError') return finish();
+      sound.textContent = 'PLAY INTRO WITH SOUND';
+    });
   });
 }
