@@ -1,4 +1,4 @@
-import {arcadeText, heart} from './render.js';
+import {arcadeText} from './render.js';
 
 const lines = [
   [0,'Zihan','You’re staring.'],[1.6,'Mahera','You wore my favorite shirt.'],
@@ -9,54 +9,42 @@ const lines = [
   [21,'Mahera','You wore the shirt again, didn’t you?']
 ];
 
-export function drawIntro(renderer, t) {
-  const c = renderer.ctx;
-  renderer.time = t;
-  if(renderer.introBooth) c.drawImage(renderer.introBooth,0,0,960,540);
-  else renderer.background(1,t);
-  const ramp=(start,end)=>{const u=Math.min(1,Math.max(0,(t-start)/(end-start)));return u*u*(3-2*u);};
-  const approach=ramp(8.7,11.8);
-  const lean=ramp(14.6,16)-ramp(17.7,18.4)+ramp(21.9,23);
-  const close=ramp(1.5,2.1)-ramp(7.7,8.3)+ramp(12,13);
-  c.save();
-  c.translate(480,310); c.scale(1+.19*close,1+.19*close); c.translate(-480,-310);
-  if ((t>=16 && t<17.9)||t>=23) renderer.couple(493,455+3*Math.sin(t*4),'kiss',false,1.55);
-  else {
-    // Change silhouette on the reply, invitation, approach, and blushing reaction.
-    const herPose=t<1.6?'sit':t<3?'blush':t<4?'hug':t<8?'sit':t<11.8?'hug':t<13?'sit':t<14.6?'blush':lean>.2?'kiss':t<20?'blush':'hug';
-    const hisPose=t<1.1?'hug':t<4?'sit':t<5.1?'blush':t<8?'hug':t<8.7?'sit':t<11.8?'walk':t<13?'hug':lean>.2?'kiss':t<18.7?'blush':t<21?'hug':'sit';
-    function actor(character,x,pose,face){
-      const speaking=lines.filter(([start])=>start<=t).at(-1)[1] === (character?'Zihan':'Mahera');
-      const beat=Math.sin(t*(speaking?6:2)+character);
-      const walking=pose==='walk';
-      c.save(); c.translate(x,462+(walking?-Math.abs(Math.sin(t*8))*10:beat*(speaking?4:2)));
-      c.rotate(face*(.045*beat+.09*lean));
-      renderer.fighter({character,x:0,y:0,face,state:pose,stateTime:t},0,1.62); c.restore();
-    }
-    actor(0,315+approach*96+lean*53,herPose,1);
-    actor(1,678-approach*126-lean*42,hisPose,-1);
-  }
-  c.restore();
-  // Two ceramic cups on the foreground café table.
-  c.fillStyle='#573044'; c.fillRect(268,389,434,17);
-  c.fillStyle='#b66d54'; c.fillRect(264,385,442,6);
-  for(const x of [364,622-approach*58]){
-    c.fillStyle='#f7d5ad'; c.fillRect(x,364,23,21); c.strokeStyle='#f7d5ad';
-    c.lineWidth=3; c.strokeRect(x+23,368,6,9); c.fillStyle='#633c3a'; c.fillRect(x+2,364,19,3);
-  }
-  const [,who,line] = lines.filter(([start])=>start<=t).at(-1);
-  c.fillStyle='#221225f5'; c.fillRect(26,423,908,95);
+// Each time marks the first frame of a new pose. The middle shot uses the approved recut at 24 fps.
+const opening = [0,.85,1.65,2.75,4,4.7,5.65,6.65,8,9.05,9.9,10.75];
+const collar = [0,18,23,28,31,35,39,48,54,62,67,78,89,96,102,108];
+const ending = [17.625,18.05,21,23.5];
+
+export async function loadFilm() {
+  return Promise.all(['intro-story.png','intro-collar.png'].map(async name=>{
+    const image=new Image();
+    image.src=new URL('../assets/'+name,import.meta.url);
+    await image.decode();
+    return image;
+  }));
+}
+
+export function drawIntro(renderer,t) {
+  const c=renderer.ctx;
+  const middle=t>=12 && t<17.625;
+  const marks=middle?collar:t<12?opening:ending;
+  const time=middle?(t-12)*24:t;
+  const index=marks.filter(start=>start<=time).length-1+(t>=17.625?12:0);
+  const sheet=renderer.introFilm[middle?1:0];
+  const w=sheet.width/4,h=sheet.height/4;
+  c.imageSmoothingEnabled=false;
+  c.drawImage(sheet,(index%4)*w+8,Math.floor(index/4)*h+9,w-16,h-18,0,0,960,540);
+  const [,who,line]=lines.filter(([start])=>start<=t).at(-1);
+  c.fillStyle='#211226f2'; c.fillRect(16,438,928,86);
   c.fillStyle=who==='Mahera'?'#ffa2c2':'#a8def8'; c.font='bold 18px monospace';
-  c.fillText(who.toUpperCase(),52,453); c.fillStyle='#fff0da'; c.font='bold 24px monospace'; c.fillText(line,52,492);
-  if(t>=23){c.save(); c.globalAlpha=Math.min(1,t-23); arcadeText(c,'LOVE FIGHT',480,40,7); heart(c,738,60,3); c.restore();}
+  c.fillText(who.toUpperCase(),36,465);
+  c.fillStyle='#fff0da'; c.font='bold 24px monospace'; c.fillText(line,36,502);
+  if(t>=24.2) arcadeText(c,'LOVE FIGHT',480,30,5);
 }
 
 export async function playIntro(renderer, overlay, audio) {
-  const key='love-fight-cafe-intro-v2';
+  const key='love-fight-cafe-intro-v3';
   try { if(sessionStorage.getItem(key)) return; } catch {}
-  const booth=new Image();
-  booth.src=new URL('../assets/intro-booth.jpg',import.meta.url);
-  try { await booth.decode(); renderer.introBooth=booth; } catch {}
+  try { renderer.introFilm=await loadFilm(); } catch { return; }
   await new Promise(resolve=>{
     const skip=document.createElement('button');
     skip.className='wedding-skip'; skip.textContent='SKIP INTRO';
