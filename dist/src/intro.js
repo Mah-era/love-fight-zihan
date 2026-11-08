@@ -32,17 +32,47 @@ export function drawIntro(renderer,t) {
   const sheet=renderer.introFilm[middle?1:0];
   const w=sheet.width/4,h=sheet.height/4;
   c.imageSmoothingEnabled=false;
-  c.drawImage(sheet,(index%4)*w+8,Math.floor(index/4)*h+9,w-16,h-18,0,0,960,540);
-  const [,who,line]=lines.filter(([start])=>start<=t).at(-1);
-  c.fillStyle='#211226f2'; c.fillRect(16,438,928,86);
-  c.fillStyle=who==='Mahera'?'#ffa2c2':'#a8def8'; c.font='bold 18px monospace';
-  c.fillText(who.toUpperCase(),36,465);
-  c.fillStyle='#fff0da'; c.font='bold 24px monospace'; c.fillText(line,36,502);
-  if(t>=24.2) arcadeText(c,'LOVE FIGHT',480,30,5);
+  const sky=c.createLinearGradient(0,0,0,540);
+  sky.addColorStop(0,'#3a173d'); sky.addColorStop(1,'#151020');
+  c.fillStyle=sky; c.fillRect(0,0,960,540);
+  c.fillStyle='#a95979'; c.fillRect(110,117,740,417);
+  c.drawImage(sheet,(index%4)*w+4,Math.floor(index/4)*h+7,w-8,h-14,112,119,736,413);
+  const [start,who,line]=lines.filter(([start])=>start<=t).at(-1);
+  const left=who==='Mahera';
+  const center=left?335:625;
+  c.save();
+  c.translate(center,56);
+  const pop=.88+.12*Math.sin(Math.min(1,(t-start)/.15)*Math.PI/2);
+  c.scale(pop,pop);
+  c.font='bold 23px monospace';
+  const rows=[''];
+  for(const word of line.split(' ')){
+    const next=(rows.at(-1)+' '+word).trim();
+    if(c.measureText(next).width>480) rows.push(word);
+    else rows[rows.length-1]=next;
+  }
+  const radius=Math.max(...rows.map(row=>c.measureText(row).width))/2+30;
+  const depth=rows.length===1?29:40;
+  c.fillStyle=left?'#ffe3f1':'#ddf4ff'; c.strokeStyle='#331834'; c.lineWidth=4;
+  c.beginPath();
+  for(let i=0;i<=160;i++){
+    const a=i*Math.PI/80, ripple=1+.036*Math.cos(14*a);
+    const x=radius*Math.sign(Math.cos(a))*Math.abs(Math.cos(a))**.52*ripple;
+    const y=depth*Math.sign(Math.sin(a))*Math.abs(Math.sin(a))**.52*ripple;
+    if(i===0)c.moveTo(x,y);else c.lineTo(x,y);
+  }
+  c.closePath(); c.fill(); c.stroke();
+  for(const [offset,y,r] of [[8,depth+13,7],[17,depth+28,4]]){
+    c.beginPath(); c.arc(left?-offset:offset,y,r,0,2*Math.PI); c.fill(); c.stroke();
+  }
+  c.fillStyle='#341832'; c.textAlign='center'; c.textBaseline='middle';
+  rows.forEach((row,i)=>c.fillText(row,0,(i-(rows.length-1)/2)*26));
+  c.restore();
+  if(t>=24.2) arcadeText(c,'LOVE FIGHT',680,48,3);
 }
 
 export async function playIntro(renderer, overlay, audio) {
-  const key='love-fight-cafe-intro-v3';
+  const key='love-fight-cafe-intro-v4';
   try { if(sessionStorage.getItem(key)) return; } catch {}
   try { renderer.introFilm=await loadFilm(); } catch { return; }
   await new Promise(resolve=>{
