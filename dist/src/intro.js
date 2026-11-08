@@ -50,7 +50,7 @@ export async function playIntro(renderer, overlay, audio) {
     function unlock(){audio.start();}
     function keyDown(e){if(e.code==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish();}else if(!e.repeat)unlock();}
     function tick(now){
-      if(previous!==undefined && !document.hidden) elapsed+=Math.min((now-previous)/1000,.1);
+      if(previous!==undefined && !document.hidden) elapsed+=Math.max(0,Math.min((now-previous)/1000,.1));
       previous=now;
       if(elapsed>=25){finish();return;}
       drawIntro(renderer,elapsed);
