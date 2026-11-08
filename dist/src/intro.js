@@ -12,13 +12,31 @@ const lines = [
 export function drawIntro(renderer, t) {
   const c = renderer.ctx;
   renderer.time = t;
-  renderer.background(1,t);
-  const approach = Math.min(1,Math.max(0,(t-8)/4));
-  if (t >= 16 && (t < 18 || t >= 23)) renderer.couple(495,414,'kiss',false,1.55);
+  if(renderer.introBooth) c.drawImage(renderer.introBooth,0,0,960,540);
+  else renderer.background(1,t);
+  const ramp=(start,end)=>{const u=Math.min(1,Math.max(0,(t-start)/(end-start)));return u*u*(3-2*u);};
+  const approach=ramp(8.7,11.8);
+  const lean=ramp(14.6,16)-ramp(17.7,18.4)+ramp(21.9,23);
+  const close=ramp(1.5,2.1)-ramp(7.7,8.3)+ramp(12,13);
+  c.save();
+  c.translate(480,310); c.scale(1+.19*close,1+.19*close); c.translate(-480,-310);
+  if ((t>=16 && t<17.9)||t>=23) renderer.couple(493,455+3*Math.sin(t*4),'kiss',false,1.55);
   else {
-    renderer.fighter({character:0,x:330+approach*95,y:414,face:1,state:'sit',stateTime:t},0,1.7);
-    renderer.fighter({character:1,x:686-approach*146,y:414,face:-1,state:'sit',stateTime:t},0,1.7);
+    // Change silhouette on the reply, invitation, approach, and blushing reaction.
+    const herPose=t<1.6?'sit':t<3?'blush':t<4?'hug':t<8?'sit':t<11.8?'hug':t<13?'sit':t<14.6?'blush':lean>.2?'kiss':t<20?'blush':'hug';
+    const hisPose=t<1.1?'hug':t<4?'sit':t<5.1?'blush':t<8?'hug':t<8.7?'sit':t<11.8?'walk':t<13?'hug':lean>.2?'kiss':t<18.7?'blush':t<21?'hug':'sit';
+    function actor(character,x,pose,face){
+      const speaking=lines.filter(([start])=>start<=t).at(-1)[1] === (character?'Zihan':'Mahera');
+      const beat=Math.sin(t*(speaking?6:2)+character);
+      const walking=pose==='walk';
+      c.save(); c.translate(x,462+(walking?-Math.abs(Math.sin(t*8))*10:beat*(speaking?4:2)));
+      c.rotate(face*(.045*beat+.09*lean));
+      renderer.fighter({character,x:0,y:0,face,state:pose,stateTime:t},0,1.62); c.restore();
+    }
+    actor(0,315+approach*96+lean*53,herPose,1);
+    actor(1,678-approach*126-lean*42,hisPose,-1);
   }
+  c.restore();
   // Two ceramic cups on the foreground café table.
   c.fillStyle='#573044'; c.fillRect(268,389,434,17);
   c.fillStyle='#b66d54'; c.fillRect(264,385,442,6);
@@ -34,8 +52,11 @@ export function drawIntro(renderer, t) {
 }
 
 export async function playIntro(renderer, overlay, audio) {
-  const key='love-fight-cafe-intro-v1';
+  const key='love-fight-cafe-intro-v2';
   try { if(sessionStorage.getItem(key)) return; } catch {}
+  const booth=new Image();
+  booth.src=new URL('../assets/intro-booth.jpg',import.meta.url);
+  try { await booth.decode(); renderer.introBooth=booth; } catch {}
   await new Promise(resolve=>{
     const skip=document.createElement('button');
     skip.className='wedding-skip'; skip.textContent='SKIP INTRO';
